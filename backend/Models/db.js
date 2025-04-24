@@ -1,10 +1,25 @@
 const mongoose = require('mongoose');
 
-const mongo_url = process.env.MONGO_CONN;
+// Use environment variable for MongoDB connection
+const mongo_url = process.env.MONGO_URI || process.env.MONGO_CONN;
 
-mongoose.connect(mongo_url)
-    .then(() => {
+const connectDB = async () => {
+    try {
+        if (!mongo_url) {
+            throw new Error('MongoDB connection string not found in environment variables');
+        }
+
+        await mongoose.connect(mongo_url, {
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
+        });
+
         console.log('MongoDB Connected...');
-    }).catch((err) => {
-        console.log('MongoDB Connection Error: ', err);
-    })
+    } catch (err) {
+        console.error('MongoDB Connection Error: ', err);
+        // Don't exit the process to allow for retry mechanisms
+    }
+};
+
+// Execute the connection
+connectDB();
